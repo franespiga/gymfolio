@@ -1,0 +1,347 @@
+import numpy as np
+import pandas as pd
+import random
+import torch
+from .common import create_return_matrices, decompose_weights_tensor
+import gymnasium
+from gymnasium.spaces import Box, Discrete
+import collections
+
+class PortfolioOptimizationEnv(gymnasium.Env):
+    """
+    This class implements a custom environment following the `gym` structure for Portfolio Optimization.
+    The vanilla environment uses the average return as the reward
+    """
+
+    def __init__(self,
+                 df_ohlc: pd.DataFrame,
+                 df_observations: pd.DataFrame,
+                 rebalance_every: int = 1,
+                 slippage: float = 0.0005,
+                 transaction_costs: float = 0.0002,
+                 continuous_weights: bool = False,
+                 allow_short_positions: bool = False,
+                 max_trajectory_len: int = 252,
+                 observation_frame_lookback: int = 5,
+                 render_mode: str = 'tile',
+                 agent_type: str = 'discrete',
+                 convert_to_terminated_truncated: bool = False,
+                 verbose: int = 0,
+                 ):
+        """
+        :param pd.DataFrame df_ohlc: pd.DataFrame with the OHLC+ of the portfolio instruments. Columns are multiindex (Symbol, Price) e.g. ('AAPL', 'Close')
+        :param pd.DataFrame df_observations: pd.DataFrame with the environment features.
+        :param int rebalance_every: periods between consecutive rebalancing actions.
+        :param float slippage: %loss due to gap between decision price for the agent and the execution price.
+        :param float transaction_costs: %loss due to execution of the trade.
+        :param bool continuous_weights: `True` to split the weights in (h)eld, (b)ought and (s)old positions.
+        :param bool allow_short_positions: `True` to enable short positions.
+        :param int max_trajectory_len: max total number of periods for the trajectories. E.g. 252 for a trading year.
+        :param int observation_frame_lookback: return the previous N observations from the environment to take the next action.
+        :param str render_mode: Either `tile` (2D), `tensor`(+2D) or `vector`(1D) to return the environment state.
+        :param str agent_type: `discrete` or `continuous`
+        :param bool convert_to_terminated_truncated: use done (old Gym version) or truncated and terminated (new Gymnasium version)
+        :param verbose: verbosity (0: None, 1: error messages, 2: all messages)
+        """
+        self.indicator_instrument_names = None
+        self.indicator_names = None
+        self.global_columns = None
+        self.indicator_columns = None
+        self.returns_sell = None
+        self.returns_buy = None
+        self.returns_hold = None
+        self.df_ohlc = df_ohlc.dropna()
+        self.n_instruments = self.df_ohlc.loc[:,[i for i in self.df_ohlc.columns if i[1]=='Close']].shape[1]
+        
+        self.preprocess_returns()
+        self.df_observations = df_observations
+        self.process_indicator_types()
+
+        self.rebalance_every = rebalance_every
+        self.slippage = slippage
+        self.transaction_costs = transaction_costs
+        self.continuous_weights = continuous_weights
+        self.allow_short_positions = allow_short_positions
+        self.available_dates = self.df_ohlc.sort_index().index.values.tolist()
+        self.rebalancing_dates = None
+        self.current_rebalancing_date = None
+        self.next_rebalancing_date = None
+        self.render_mode = render_mode
+        self.agent_type = agent_type
+        self.convert_to_terminated_truncated = convert_to_terminated_truncated
+
+        self.max_trajectory_len = max_trajectory_len
+        self.observation_frame_lookback = observation_frame_lookback
+        self.current_trajectory_len = None
+        self.trajectory_returns = []
+        self.last_returns = None
+
+        self.action_space = self.get_action_space()
+        self.action_size = self.action_space.n if isinstance(self.action_space, Discrete) else self.action_space.shape[0]
+        self.observation_space = self.get_observation_space()
+
+        self.current_weights = np.zeros(self.action_size)
+        self.new_weights = np.zeros(self.action_size)
+
+        self.reset()
+
+        self.verbose = verbose
+
+    """
+    Environment auxiliary methods
+    """
+
+    def get_action_space(self):
+        """
+        Infer action space as the number of instruments to choose from.
+        Instruments should be provided to the environment using a pd.DataFrame with MultiIndex columns [(Ticker, Open), (Ticker,...),(Ticker, Close)]
+
+        :return: number of "actions" (instruments) and their bounds in the continuous action space case.
+        """
+        n_instruments = len(set([i[0] for i in self.df_ohlc.columns]))
+        if self.agent_type == 'discrete':
+            return Discrete(n_instruments)
+        elif self.agent_type == 'continuous':
+            return Box(-np.ones(n_instruments)*self.allow_short_positions, np.ones(n_instruments))
+
+    def get_observation_space(self):
+        """
+        Get the observation space for the agents
+        :return: observation space with the bounds across each element of the state.
+
+        """
+        # return self.df_observations.shape[1]
+
+
+        if self.render_mode == 'tile':
+            lows = np.tile(self.df_observations.min(axis=0).values, (1 + self.observation_frame_lookback, 1))
+            highs = np.tile(self.df_observations.max(axis=0).values, (1 + self.observation_frame_lookback, 1))
+            return Box(low=lows, high=highs, shape=[1 + self.observation_frame_lookback, self.df_observations.shape[1]])
+
+        elif self.render_mode == 'tensor':
+            new_shape = (len(self.indicator_names), len(self.indicator_instrument_names))
+            lows = np.tile(np.reshape(self.df_observations.min(axis=0).values, new_shape), (1 + self.observation_frame_lookback, 1,1))
+            lows = lows.transpose(2, 0, 1)
+
+            highs = np.tile(np.reshape(self.df_observations.max(axis=0).values, new_shape),(1+ self.observation_frame_lookback , 1,1))
+            highs = highs.transpose(2, 0, 1)
+
+            return Box(low=lows, high=highs, shape=[len(self.indicator_instrument_names), 1 + self.observation_frame_lookback, len(self.indicator_names)])
+
+
+
+
+    def preprocess_returns(self):
+        """
+        Transform OHLC prices into buy/hold/sell returns
+        - Buy: Close_t/Open_t
+        - Hold: Close_t/Close_t-1
+        - Sell: Open_t/Close_t-1
+
+        It stores in three dataframes the Hold/Buy/Sell returns per instrument.
+
+        :param df_ohlc: dataframe of OHLC prices
+        :return: None
+        """
+        r_h, r_b, r_s = create_return_matrices(self.df_ohlc)
+        self.returns_hold = r_h
+        self.returns_buy = r_b
+        self.returns_sell = r_s
+
+    def process_indicator_types(self):
+        #ToDo docstrings
+        indicator_names = [i[1] for i in self.df_observations.columns]
+        occurrences = collections.Counter(indicator_names)
+        single = [k for k,v in occurrences.items() if v==1]
+        multiple = [k for k,v in occurrences.items() if v>1]
+
+        indicator_columns = [i for i in self.df_observations.columns if i[1] in multiple]
+        self.global_columns = [i for i in self.df_observations.columns if i[1] in single]
+
+        self.indicator_names = list(set([i[1] for i in indicator_columns]))
+        self.indicator_instrument_names = list(set([i[0] for i in indicator_columns]))
+
+        # Reorder indicators as [(Instrument A, indicator 1), (Instrument A, indicator 2) ... (Instrument M, indicator N)]
+        # To be used with Convolutional feature extractors in the policy
+        rearranged_indicators = [(i, j) for i in self.indicator_instrument_names for j in self.indicator_names]
+        self.indicator_columns = rearranged_indicators
+
+
+    def compute_reward(self, r):
+        """
+        Compute the rewards as the sum of log-returns
+        :param r: returns series
+        :return:
+        """
+        return torch.sum(torch.log(1 + r))
+
+    def create_info(self):
+        """
+        Placeholder method to return additional environment info for custom environments
+        :return:
+        """
+        return dict()
+
+    def reset(self, seed: int = None, options: dict = None):
+        """
+        Method to reset the environment,
+        :param seed: int, random seed.
+        :param options: dictionary of options
+        :return:
+        """
+        self.current_rebalancing_date = random.choice(self.available_dates[:-(self.rebalance_every + 1)])
+        self.current_trajectory_len = 0.0
+        self.trajectory_returns = []
+        self.rebalancing_dates = self.available_dates[
+                                 self.available_dates.index(self.current_rebalancing_date)::self.rebalance_every]
+        self.next_rebalancing_date = self.rebalancing_dates[
+            self.rebalancing_dates.index(self.current_rebalancing_date) + 1]
+        _new_weights = torch.rand(self.action_size)
+        self.new_weights = _new_weights/_new_weights.sum()  # We start without any assets
+
+        idx_lookback = max(0,
+                           self.available_dates.index(self.current_rebalancing_date) - self.observation_frame_lookback)
+
+        observation_frame = self.df_observations[self.available_dates[idx_lookback]:self.current_rebalancing_date]
+        observation_frame = self.expand_observation_frame(observation_frame)
+        # Add any additional information ---
+        info = dict()
+        info['indices'] = observation_frame.index.tolist()
+        info['features'] = observation_frame.columns.tolist()
+
+        if self.render_mode == 'tile':
+            observations = self.return_obs_frame_as_tile(observation_frame)
+        elif self.render_mode == 'vector':
+            observations = self.return_obs_frame_as_vector(observation_frame)
+        elif self.render_mode == 'tensor':
+            observation_frame = self.return_obs_frame_as_tensor(observation_frame)
+
+        return observation_frame, info
+
+    def expand_observation_frame(self, obs_frame):
+
+        if obs_frame.shape[0] == 0:
+            return self.df_observations.tail(1).sample(self.observation_frame_lookback + 1, replace=True)
+        elif obs_frame.shape[0] < self.observation_frame_lookback + 1:
+
+            return obs_frame.sample(self.observation_frame_lookback + 1, replace = True)
+        else:
+            return obs_frame
+
+    def return_obs_frame_as_tensor(self, obs_frame):
+        # Take repeated indicators and reshape that
+        # Tensors are in the shape of Channels x Height x Width -> instruments x lookback x indicators
+        n_channels = len(self.indicator_instrument_names)
+        global_tensor = torch.tile(torch.Tensor(obs_frame.loc[:, self.global_columns].values), [n_channels, 1, 1])
+
+        indicators_tensor = torch.Tensor([obs_frame[i].loc[:, self.indicator_names].values for i in self.indicator_instrument_names])
+
+        if not 0 in global_tensor.size():
+            return torch.concat([indicators_tensor, global_tensor], 1)
+        else:
+            return indicators_tensor
+
+    def return_obs_frame_as_vector(self, obs_frame):
+        obs = torch.Tensor(obs_frame.values)
+        return obs
+
+    def return_obs_frame_as_tile(self, obs_frame):
+        obs = torch.Tensor(obs_frame.values)
+        return obs
+
+
+    def step(self, action):
+        # Check that weights have the correct dimension ---
+
+        # assert action.shape[1] == self.action_size
+        self.current_weights = self.new_weights
+
+        if self.agent_type == 'discrete':
+            self.new_weights = torch.zeros(self.action_size)
+            self.new_weights[action] = 1.0
+        else:
+            if not self.allow_short_positions:
+                self.new_weights = torch.Tensor(action)/torch.Tensor(action).sum()
+
+        # Get the observation frame ---
+        """
+        Observation frame takes from the Action date (consecutive timestamp from previous decision date where buys/sell became effective, 
+        to the decision date at close)
+        """
+        # get trajectory returns during holding period ---
+        effective_rebalancing_date = self.available_dates[self.available_dates.index(self.current_rebalancing_date) + 1]
+        r_sell = torch.Tensor(self.returns_sell.loc[[effective_rebalancing_date]].values).squeeze()
+        r_buy = torch.Tensor(self.returns_buy.loc[[effective_rebalancing_date]].values).squeeze()
+        return_frame = self.returns_hold.loc[effective_rebalancing_date:self.next_rebalancing_date, :]
+        R_hold = torch.Tensor(return_frame.values)
+        r_hold = torch.Tensor(self.returns_hold.loc[[effective_rebalancing_date]].values).squeeze()
+
+        # Observation frame is the next information available, from our action date (decision date+1) to the next rebalancing date
+        # This is the information that we will use to decide the next weights.
+        idx_lookback = max(0, self.available_dates.index(self.next_rebalancing_date) - self.observation_frame_lookback)
+        observation_frame = self.df_observations[self.available_dates[idx_lookback]:self.next_rebalancing_date]
+        observation_frame = self.expand_observation_frame(observation_frame)
+
+        # Add any additional information ---
+        info = dict()
+        info['indices'] = observation_frame.index.tolist()
+        info['features'] = observation_frame.columns.tolist()
+
+        if self.render_mode == 'tile':
+            observations = self.return_obs_frame_as_tile(observation_frame)
+        elif self.render_mode == 'vector':
+            observations = self.return_obs_frame_as_vector(observation_frame)
+        elif self.render_mode == 'tensor':
+            observations = self.return_obs_frame_as_tensor(observation_frame)
+
+        # Check if the environment is done ---
+        """
+        If the next rebalancing date is the last one, we will not be able to compute the rewards afterwards. 
+        """
+        self.current_trajectory_len += self.rebalance_every
+        truncated = False
+        terminated = False
+        if (self.next_rebalancing_date == self.rebalancing_dates[-1]):
+            # We do not rebalance in the last rebalancing date, we just want to keep homogeneous decision tensors.
+            terminated = True
+        elif (self.current_trajectory_len == self.max_trajectory_len):
+            truncated = True
+        else:
+            # move the date cursor to the next rebalancing dates ---
+            self.current_rebalancing_date = self.next_rebalancing_date  # Date when we are taking the decision
+            self.next_rebalancing_date = self.rebalancing_dates[
+                self.rebalancing_dates.index(self.current_rebalancing_date) + 1]  # Get next rebalancing date
+
+        # Compute split weights and compute returns ---
+        if self.continuous_weights:
+            r = torch.matmul(self.new_weights, R_hold.T)
+            r[0] += - (self.transaction_costs + self.slippage)
+
+        else:
+            w_h, w_b, w_s = decompose_weights_tensor(self.new_weights, self.current_weights)
+            # Compute returns of Buy/Sell
+
+            r_s = torch.dot(w_s.squeeze(), r_sell)
+            r_b = torch.dot(w_b.squeeze(), r_buy)
+            r_h = torch.dot(w_h.squeeze(), r_hold)
+
+            r = torch.matmul(self.new_weights, R_hold.T)
+
+            r[0] += (r_s - self.transaction_costs - self.slippage)
+            r[0] += (r_b - self.transaction_costs - self.slippage)
+            r[0] += r_h
+
+        self.last_returns = r
+
+        df_r = pd.Series(r.numpy().squeeze(), index=pd.to_datetime(return_frame.index))
+        self.trajectory_returns.append(df_r)
+        if truncated or terminated:
+            self.trajectory_returns = pd.concat(self.trajectory_returns)
+        reward = self.compute_reward(r)
+
+
+
+        if self.convert_to_terminated_truncated:
+            return observations, reward, truncated, terminated, info
+        else:
+            return observations, reward, truncated or terminated, info
