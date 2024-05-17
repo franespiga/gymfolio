@@ -8,13 +8,11 @@ with most of the agents in the package [Stable Baselines 3](https://stable-basel
 been tested with `DQN`, `DDPG`, `PPO` and `SAC`. 
 
 GymFolio offers a highly flexible environment that allows users to experiment with different reward mechanisms, as well as extend it to their own. 
-Users can utilize traditional log returns, or incorporate other usual metrics from the industry such as the Sharpe and Sortino ratios to measure performance. 
+Users can utilize traditional log returns, or incorporate other usual metrics from the industry such as the Sharpe ratio and tracking error to measure performance. 
 GymFolio also integrates key financial concepts such as the risk-free rate, slippage, and transaction costs, which are crucial for creating realistic 
 trading simulations and optimizing portfolio decisions avoiding usual pitfalls that invalidate promising strategies.
 
-- **Log Returns**: 
-- **Sharpe Ratio**: `S = (R_p - R_f) / \sigma_p` where \( R_p \) is the expected portfolio return, \( R_f \) is the risk-free rate, and \( \sigma_p \) is the standard deviation of the portfolio's excess return.
-- **Sortino Ratio**: `S = (R_p - R_f) / \sigma_d` where \( \sigma_d \) is the standard deviation of the negative asset returns.
+
 
 ## Base environment
 The base environment class is located in `envs/base/PortfolioOptimizationEnv`, and it is built using OHLC data and an additional dataframe for 
@@ -106,6 +104,35 @@ only impacts the buys and sales.
 - **Transaction costs**: Expenses incurred when buying or selling securities, including commissions and fees.
   As with the slippage, t is used in the `continous_weights=True` case as a negative contribution in the returns of the first day. In the `continous_weights=False` it
   only impacts the buys and sales.
+
+## Other environments
+
+### Sharpe ratio environment 
+The Sharpe ratio environment replaces the cumulative log-returns as the reward by the Sharpe ratio between periods. Code is located in 
+`src/envs/custom/SharpeEnv`. 
+
+The Sharpe ratio is computed as:
+
+$$S = (R_p - R_f) / \sigma_p$$ 
+
+where $R_p$ is the expected annualized portfolio return, $R_f$ is the risk-free rate, and $\sigma_p$ is the standard deviation of the portfolio's excess return.
+
+This environment only modifies the `compute_reward` method of the environment class and adds three additional attributes:
+
+* `riskfree_rate`: risk free rate to compute the numerator of the sharpe ratio (r-Rf).
+* `periods_per_year`: periods per year to annualize returns for the Sharpe ratio computation.
+* `compute_cumulative`: use the whole trajectory of the episode or just the last returns for the computation of the Sharpe ratio.
+
+
+### Tracking error environment 
+The tracking error environment replaces the reward by the tracking error between the portfolio returns and a series of reference returns, usually an index like the 
+SP500. Code is located in `src/envs/custom/TrackingErrorEnv`.
+
+The tracking error is computed as the standard deviation between the portfolio returns and the reference returns.
+This environment modifies the `compute_reward` and `step` methods of the environment class and adds one additional attribute:
+
+* `df_reference`: pd.DataFrame with the reference returns (tracked instrument).
+
 
 
 ## Agents
