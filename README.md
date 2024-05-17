@@ -143,4 +143,5 @@ that can be used and extended with low or high level implementations of RL agent
 Gymfolio is compatible with most of the Stable Baselines 3 agents, and has been tested with a subset of them both with discrete and continuous action spaces. 
 Gymfolio also has been successfully used in training Decision Transformers, generating trajectories to train the agent offline.  
 
-Examples of both scenarios are provided in the `examples/` folder.
+## Example
+An example of the usage of StableBaselines3 is provided in `examples/stable_baselines3.py`. It consumes the `data/example.h5` datasets in HDF5 format. 
