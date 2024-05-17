@@ -53,9 +53,11 @@ The environment starts on `2023-03-06` and our first rebalancing date is `2023-0
 ### Base reward
 The reward provided is the log return between the effective rebalancing period and the previous rebalancing period.
 Some additional considerations on how the return series is computed when `continous_weights=False` are explained
-in section [Weight and return processing](###Weight and return processing.)
+in section [Weight and return processing](#weight-and-return-processing)
 
-$ r_t = log(1 + P_t / P_{t-1})$ where $P_t$ is the price of an asset at time t.
+$$r_t = log(1 + P_t / P_{t-1})$$ 
+
+where $P_t$ is the price of an asset at time t.
 
 Then, as the agent decides through an episode, it collects subsequent $r_t$ rewards at each rebalancing date, with a discount factor $\gamma$.
 
@@ -64,7 +66,7 @@ More sophisticated reward functions are in the children environments located in 
 
 
 
-### Weight and return processing. 
+### Weight and return processing
 Conventional usage of weights is done when the environment is initialized with `continuous_weights=True`. In this case, the returns are
 the weighed average of the returns from the closing price of the previous rebalancing date, to the closing price of the current rebalancing date, 
 irrespective of the date being a holding date or a rebalancing date (thus modifying the weights the next day).
