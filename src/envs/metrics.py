@@ -68,7 +68,7 @@ def tracking_error(r, ref) -> torch.Tensor:
     """
     t_e = torch.std(torch.sub(r, ref, alpha=1), unbiased = True)
     if t_e.isnan():
-        return torch.std(torch.sub(r, ref, alpha=1), unbiased = False)
+        return -torch.std(torch.sub(r, ref, alpha=1), unbiased = False)
     else:
         return t_e
 

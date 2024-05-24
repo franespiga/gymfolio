@@ -49,6 +49,8 @@ The environment starts on `2023-03-06` and our first rebalancing date is `2023-0
 6. Date trackers are updated and the environment checks if the trajectory has the maximum length of 10, or if there are no more available rebalancing dates in the history.
    If that is the case, `env.step()` returns `done=True`, else the environment proceeds to the next interaction.
 
+![envobs](./docs/_static/gymfolio_obs.png)
+
 
 ### Base reward
 The reward provided is the log return between the effective rebalancing period and the previous rebalancing period.
@@ -71,7 +73,7 @@ Conventional usage of weights is done when the environment is initialized with `
 the weighed average of the returns from the closing price of the previous rebalancing date, to the closing price of the current rebalancing date, 
 irrespective of the date being a holding date or a rebalancing date (thus modifying the weights the next day).
 
-$$r=\vec{w}.\cdot \vec{\frac{Price_{Close,t+1}}{Price_{Close,t}}}$$
+$$r=\vec{w}.\cdot \vec{\frac{P_{Close,t}}{P_{Close,t-1}}}$$
 
 If `continuous_weights=False`, however, we can split the next weights (*agent action*) in three vectors.
 
@@ -93,6 +95,57 @@ For the effective action date, the return is the sum of three different return s
 * Hold: the return is computed as the ratio of the Close price and the last Close.
 
 ![returns](./docs/_static/returns.png)
+
+### Observations 
+Gymfolio offers versatile options for configuring the observation space, which is derived from the subset of the last 
+`lookback` observations prior to the rebalancing date in the `df_observations` dataframe. This observation space can be
+formatted as a 1D vector, a 2D matrix, or a tensor, providing flexibility in how the data is presented 
+to the reinforcement learning agent.
+
+![dfobs](./docs/_static/obs_dataframe.png)
+
+#### Vector mode
+In vector mode, the rows of the observation table are concatenated into a
+single 1D vector. This format is straightforward and compatible with various
+machine learning models, presenting all the observational data in a flat, linear
+structure. This method is particularly useful when the agent requires a simple,
+compact representation of the data, such as tree-based models or multi-layer
+perceptrons (MLPs).
+
+![obs_vector](./docs/_static/obs_vector.png)
+
+
+#### Tile mode 
+In tile mode, the observation table maintains its original shape, structured as
+a lookback x indicators matrix. This format is ideal for models that benefit from
+spatial or sequential representations of data, such as Recurrent Neural Networks
+(RNNs) or Convolutional Neural Networks (CNNs). By retaining the matrix
+structure, the environment provides a comprehensive view of the indicators over
+the lookback period, enabling the agent to detect patterns and temporal relationships effectively.
+
+![obs_tile](./docs/_static/obs_tile.png)
+
+#### Tensor mode
+
+In tensor mode, the observation data is processed differently to accommodate
+more complex models. Indicators specific to individual investment instruments,
+such as the Money Flow Index (MFI) or Relative Strength Index (RSI), are
+identified using the multiindex of the pandas dataframe. These indicators are
+extracted to form a tensor I, with dimensions of instruments x lookback x indicators. 
+
+Additionally, global indicators that affect all instruments simultaneously,
+such as the Volatility Index (VIX) or interest rates, are extracted similarly.
+This global tensor G is then replicated across the number of instruments and
+concatenated with tensor I, resulting in the final observation tensor O.
+
+![obs_tensor](./docs/_static/obs_tensor.png)
+
+Unlike the traditional (height x width x channels) format used in CNNs for
+computer vision, Gymfolio returns the tensor as Channels x Height x Width or
+instruments x lookback x indicators. This arrangement ensures compatibility
+with high-level reinforcement learning libraries like [StableBaselines3](https://stable-baselines3.readthedocs.io/en/master/), allowing
+for seamless integration and utilization of advanced RL algorithms.
+
 
 
 ### Other considerations
@@ -146,4 +199,4 @@ Gymfolio is compatible with most of the Stable Baselines 3 agents, and has been 
 Gymfolio also has been successfully used in training Decision Transformers, generating trajectories to train the agent offline.  
 
 ## Example
-An example of the usage of StableBaselines3 is provided in `examples/stable_baselines3.py`. It consumes the `data/example.h5` datasets in HDF5 format. 
+An example of the usage of StableBaselines3 is provided in `examples/stable_baselines3.py`. It uses the `data/example.h5` datasets in HDF5 format. 
