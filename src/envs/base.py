@@ -27,6 +27,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
                  render_mode: str = 'tile',
                  agent_type: str = 'discrete',
                  convert_to_terminated_truncated: bool = False,
+                 trajectory_bootstrapping: bool = True,
                  verbose: int = 0,
                  ):
         """
@@ -35,13 +36,14 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         :param int rebalance_every: periods between consecutive rebalancing actions.
         :param float slippage: %loss due to gap between decision price for the agent and the execution price.
         :param float transaction_costs: %loss due to execution of the trade.
-        :param bool continuous_weights: `True` to split the weights in (h)eld, (b)ought and (s)old positions.
+        :param bool continuous_weights: `False` to split the weights in (h)eld, (b)ought and (s)old positions.
         :param bool allow_short_positions: `True` to enable short positions.
         :param int max_trajectory_len: max total number of periods for the trajectories. E.g. 252 for a trading year.
         :param int observation_frame_lookback: return the previous N observations from the environment to take the next action.
-        :param str render_mode: Either `tile` (2D), `tensor`(+2D) or `vector`(1D) to return the environment state.
+        :param str render_mode: Either `tile` (2D), `tensor`(3D) or `vector`(1D) to return the environment state.
         :param str agent_type: `discrete` or `continuous`
         :param bool convert_to_terminated_truncated: use done (old Gym version) or truncated and terminated (new Gymnasium version)
+        :param bool trajectory_bootstrapping: use non-consecutive ordered rebalancing dates to break correlation (trajectory bootstrapping)
         :param verbose: verbosity (0: None, 1: error messages, 2: all messages)
         """
         self.indicator_instrument_names = None
@@ -70,7 +72,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         self.render_mode = render_mode
         self.agent_type = agent_type
         self.convert_to_terminated_truncated = convert_to_terminated_truncated
-
+        self.trajectory_bootstrapping = trajectory_bootstrapping
         self.max_trajectory_len = max_trajectory_len
         self.observation_frame_lookback = observation_frame_lookback
         self.current_trajectory_len = None
@@ -210,8 +212,18 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         self.current_rebalancing_date = random.choice(self.available_dates[:-(self.rebalance_every + 1)])
         self.current_trajectory_len = 0.0
         self.trajectory_returns = []
-        self.rebalancing_dates = self.available_dates[
-                                 self.available_dates.index(self.current_rebalancing_date)::self.rebalance_every]
+
+
+        if self.trajectory_bootstrapping:
+            n_samples = 1+self.max_trajectory_len//self.rebalance_every
+            self.rebalancing_dates = np.random.choice(
+                self.available_dates[self.available_dates.index(self.current_rebalancing_date):],
+                n_samples)
+            self.rebalancing_dates.sort()
+        else:
+            self.rebalancing_dates = self.available_dates[
+                                     self.available_dates.index(self.current_rebalancing_date)::self.rebalance_every]
+
         self.next_rebalancing_date = self.rebalancing_dates[
             self.rebalancing_dates.index(self.current_rebalancing_date) + 1]
         _new_weights = torch.rand(self.action_size)
@@ -360,6 +372,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         # Observation frame is the next information available, from our action date (decision date+1) to the next rebalancing date
         # This is the information that we will use to decide the next weights.
         idx_lookback = max(0, self.available_dates.index(self.next_rebalancing_date) - self.observation_frame_lookback)
+
         observation_frame = self.df_observations[self.available_dates[idx_lookback]:self.next_rebalancing_date]
         observation_frame = self.expand_observation_frame(observation_frame)
 
@@ -401,13 +414,15 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         else:
             w_h, w_b, w_s = decompose_weights_tensor(self.new_weights, self.current_weights)
             # Compute returns of Buy/Sell
-
             r_s = torch.dot(w_s.squeeze(), r_sell)
             r_b = torch.dot(w_b.squeeze(), r_buy)
             r_h = torch.dot(w_h.squeeze(), r_hold)
 
+            # Multiply returns x weights to get the portfolio returns
             r = torch.matmul(self.new_weights, R_hold.T)
 
+            # Modify the returns of the 1st day of trajectory to account for slippage and transaction costs
+            # as well as buys/sales returns
             r[0] += (r_s - self.transaction_costs - self.slippage)
             r[0] += (r_b - self.transaction_costs - self.slippage)
             r[0] += r_h
