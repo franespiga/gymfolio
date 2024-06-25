@@ -27,7 +27,8 @@ class PortfolioOptimizationEnv(gymnasium.Env):
                  render_mode: str = 'tile',
                  agent_type: str = 'discrete',
                  convert_to_terminated_truncated: bool = False,
-                 trajectory_bootstrapping: bool = True,
+                 trajectory_bootstrapping: bool = False,
+                 epìsodic_instrument_shifting: bool = False,
                  verbose: int = 0,
                  ):
         """
@@ -44,6 +45,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         :param str agent_type: `discrete` or `continuous`
         :param bool convert_to_terminated_truncated: use done (old Gym version) or truncated and terminated (new Gymnasium version)
         :param bool trajectory_bootstrapping: use non-consecutive ordered rebalancing dates to break correlation (trajectory bootstrapping)
+        :param bool epìsodic_instrument_shifting: shift order of instruments at env.reset()
         :param verbose: verbosity (0: None, 1: error messages, 2: all messages)
         """
         self.indicator_instrument_names = None
@@ -56,9 +58,9 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         self.df_ohlc = df_ohlc.dropna()
         self.n_instruments = self.df_ohlc.loc[:, [i for i in self.df_ohlc.columns if i[1] == 'Close']].shape[1]
 
-        self.preprocess_returns()
         self.df_observations = df_observations
         self.process_indicator_types()
+        self.preprocess_returns()
 
         self.rebalance_every = rebalance_every
         self.slippage = slippage
@@ -73,6 +75,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         self.agent_type = agent_type
         self.convert_to_terminated_truncated = convert_to_terminated_truncated
         self.trajectory_bootstrapping = trajectory_bootstrapping
+        self.episodic_instrument_shifting = epìsodic_instrument_shifting
         self.max_trajectory_len = max_trajectory_len
         self.observation_frame_lookback = observation_frame_lookback
         self.current_trajectory_len = None
@@ -116,6 +119,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         :return: observation space with the bounds across each element of the state.
 
         """
+        #ToDo EPISODIC INSTRUMENT SHIFTING - observation space needs to be rebuilt at every env reset()
         if self.render_mode == 'vector':
             lows = np.tile(self.df_observations.min(axis=0).values, (1 + self.observation_frame_lookback, 1)).squeeze()
             highs = np.tile(self.df_observations.max(axis=0).values, (1 + self.observation_frame_lookback, 1)).squeeze()
@@ -149,7 +153,9 @@ class PortfolioOptimizationEnv(gymnasium.Env):
 
         :return: None
         """
-        r_h, r_b, r_s = create_return_matrices(self.df_ohlc)
+        ohlc_cols = list(set([i[1] for i in self.df_ohlc.columns]))
+        instrument_ordering = [(i, j) for i in self.indicator_instrument_names for j in ohlc_cols]
+        r_h, r_b, r_s = create_return_matrices(self.df_ohlc.loc[:,instrument_ordering])
         self.returns_hold = r_h
         self.returns_buy = r_b
         self.returns_sell = r_s
@@ -173,10 +179,14 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         self.indicator_names = list(set([i[1] for i in indicator_columns]))
         self.indicator_instrument_names = list(set([i[0] for i in indicator_columns]))
 
+        if self.episodic_instrument_shifting:
+            random.shuffle(self.indicator_instrument_names)
+
         # Reorder indicators as [(Instrument A, indicator 1), (Instrument A, indicator 2) ... (Instrument M, indicator N)]
         # To be used with Convolutional feature extractors in the policy
-        rearranged_indicators = [(i, j) for i in self.indicator_instrument_names for j in self.indicator_names]
-        self.indicator_columns = rearranged_indicators
+        self.indicator_columns = [(i, j) for i in self.indicator_instrument_names for j in self.indicator_names]
+        self.df_observations = self.df_observations.loc[:,self.indicator_columns]
+
 
     def compute_reward(self, r) -> torch.Tensor:
         """
@@ -213,6 +223,9 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         self.current_trajectory_len = 0.0
         self.trajectory_returns = []
 
+        # This is required for episodic instrument shifting
+        self.process_indicator_types()
+        self.preprocess_returns()
 
         if self.trajectory_bootstrapping:
             n_samples = 1+self.max_trajectory_len//self.rebalance_every
