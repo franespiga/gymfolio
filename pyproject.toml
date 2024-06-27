@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "gymfolio"
+version = "0.1.0"
+description = "Reinforcement Learning environment for Portfolio Optimization"
+authors = ["franespiga <francisco.espiga.fernandez@gmail.com>"]
+readme = "README.md"
+packages = [{include = "*", from="src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.26.4"
+pandas = "^2.2.2"
+stable-baselines3 = "^2.3.2"
+gymnasium = "^0.29.1"
+torch = "^2.0.1"
+tqdm = "^4.66.1"
+tables = "^3.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
