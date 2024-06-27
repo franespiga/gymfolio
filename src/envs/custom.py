@@ -22,8 +22,8 @@ class SharpeEnv(PortfolioOptimizationEnv):
     :param bool allow_short_positions: `True` to enable short positions.
     :param int max_trajectory_len: max total number of periods for the trajectories. E.g. 252 for a trading year.
     :param int observation_frame_lookback: return the previous N observations from the environment to take the next action.
-    :param str render_mode: Either `tile` (2D), `tensor`(+2D) or `vector`(1D) to return the environment state.
-    :param str agent_type: `discrete` or `continuous`
+    :param str render_mode: Either `tile` (2D), `tensor`(+2D) or `vector` (1D) to return the environment state.
+    :param str agent_type: `discrete` or `continuous`.
     :param bool convert_to_terminated_truncated: use done (old Gym version) or truncated and terminated (new Gymnasium version)
     :param float riskfree_rate: risk free rate to compute the numerator of the sharpe ratio (r-Rf)
     :param int periods_per_year: periods per year to annualize returns for the Sharpe ratio computation.
@@ -83,8 +83,8 @@ class TrackingErrorEnv(PortfolioOptimizationEnv):
     :param bool allow_short_positions: `True` to enable short positions.
     :param int max_trajectory_len: max total number of periods for the trajectories. E.g. 252 for a trading year.
     :param int observation_frame_lookback: return the previous N observations from the environment to take the next action.
-    :param str render_mode: Either `tile` (2D), `tensor`(+2D) or `vector`(1D) to return the environment state.
-    :param str agent_type: `discrete` or `continuous`
+    :param str render_mode: Either `tile` (2D), `tensor`(+2D) or `vector` (1D) to return the environment state.
+    :param str agent_type: `discrete` or `continuous`.
     :param bool convert_to_terminated_truncated: use done (old Gym version) or truncated and terminated (new Gymnasium version)
     :param verbose: verbosity (0: None, 1: error messages, 2: all messages)
      """
@@ -242,7 +242,7 @@ class CompositeRewardEnv(PortfolioOptimizationEnv):
     :param bool allow_short_positions: `True` to enable short positions.
     :param int max_trajectory_len: max total number of periods for the trajectories. E.g. 252 for a trading year.
     :param int observation_frame_lookback: return the previous N observations from the environment to take the next action.
-    :param str render_mode: Either `tile` (2D), `tensor`(+2D) or `vector`(1D) to return the environment state.
+    :param str render_mode: Either `tile` (2D), `tensor`(+2D) or `vector` (1D) to return the environment state.
     :param str agent_type: `discrete` or `continuous`
     :param bool convert_to_terminated_truncated: use done (old Gym version) or truncated and terminated (new Gymnasium version)
     :param verbose: verbosity (0: None, 1: error messages, 2: all messages)

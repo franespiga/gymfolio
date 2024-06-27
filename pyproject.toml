@@ -16,6 +16,13 @@ torch = "^2.0.1"
 tqdm = "^4.66.1"
 tables = "^3.8.0"
 
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+pylint = "^3.2.4"
+wrapt = "^1.16.0"
+sphinx = "^7.3.7"
+sphinx-rtd-theme = "^2.0.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
