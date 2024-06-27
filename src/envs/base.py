@@ -119,7 +119,6 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         :return: observation space with the bounds across each element of the state.
 
         """
-        #ToDo EPISODIC INSTRUMENT SHIFTING - observation space needs to be rebuilt at every env reset()
         if self.render_mode == 'vector':
             lows = np.tile(self.df_observations.min(axis=0).values, (1 + self.observation_frame_lookback, 1)).squeeze()
             highs = np.tile(self.df_observations.max(axis=0).values, (1 + self.observation_frame_lookback, 1)).squeeze()
