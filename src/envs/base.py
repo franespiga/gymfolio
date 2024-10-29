@@ -1,3 +1,21 @@
+"""
+Gymfolio. A Reinforcement Learning environment for Portfolio Optimization
+Copyright (C) 2024 Francisco Espiga Fernández
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 import numpy as np
 import pandas as pd
 import random
@@ -28,7 +46,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
                  agent_type: str = 'discrete',
                  convert_to_terminated_truncated: bool = False,
                  trajectory_bootstrapping: bool = False,
-                 epìsodic_instrument_shifting: bool = False,
+                 episodic_instrument_shifting: bool = False,
                  verbose: int = 0,
                  ):
         """
@@ -45,7 +63,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         :param str agent_type: `discrete` or `continuous`
         :param bool convert_to_terminated_truncated: use done (old Gym version) or truncated and terminated (new Gymnasium version)
         :param bool trajectory_bootstrapping: use non-consecutive ordered rebalancing dates to break correlation (trajectory bootstrapping)
-        :param bool epìsodic_instrument_shifting: shift order of instruments at env.reset()
+        :param bool episodic_instrument_shifting: shift order of instruments at env.reset()
         :param verbose: verbosity (0: None, 1: error messages, 2: all messages)
         """
         self.indicator_instrument_names = None
@@ -57,11 +75,9 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         self.returns_hold = None
         self.df_ohlc = df_ohlc.dropna()
         self.n_instruments = self.df_ohlc.loc[:, [i for i in self.df_ohlc.columns if i[1] == 'Close']].shape[1]
+        self.episodic_instrument_shifting = episodic_instrument_shifting
 
         self.df_observations = df_observations
-        self.process_indicator_types()
-        self.preprocess_returns()
-
         self.rebalance_every = rebalance_every
         self.slippage = slippage
         self.transaction_costs = transaction_costs
@@ -75,7 +91,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         self.agent_type = agent_type
         self.convert_to_terminated_truncated = convert_to_terminated_truncated
         self.trajectory_bootstrapping = trajectory_bootstrapping
-        self.episodic_instrument_shifting = epìsodic_instrument_shifting
+
         self.max_trajectory_len = max_trajectory_len
         self.observation_frame_lookback = observation_frame_lookback
         self.current_trajectory_len = None
@@ -90,6 +106,8 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         self.current_weights = np.zeros(self.action_size)
         self.new_weights = np.zeros(self.action_size)
 
+        self.process_indicator_types()
+        self.preprocess_returns()
         self.reset()
 
         self.verbose = verbose
@@ -183,7 +201,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
 
         # Reorder indicators as [(Instrument A, indicator 1), (Instrument A, indicator 2) ... (Instrument M, indicator N)]
         # To be used with Convolutional feature extractors in the policy
-        self.indicator_columns = [(i, j) for i in self.indicator_instrument_names for j in self.indicator_names]
+        self.indicator_columns = [(i, j) for i in self.indicator_instrument_names for j in self.indicator_names if (i,j) in self.df_observations.columns]
         self.df_observations = self.df_observations.loc[:,self.indicator_columns]
 
 
