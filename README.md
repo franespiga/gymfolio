@@ -199,4 +199,12 @@ Gymfolio is compatible with most of the Stable Baselines 3 agents, and has been 
 Gymfolio also has been successfully used in training Decision Transformers, generating trajectories to train the agent offline.  
 
 ## Example
-An example of the usage of StableBaselines3 is provided in `examples/stable_baselines3.py`. It uses the `data/example.h5` datasets in HDF5 format. 
+An example of the usage of StableBaselines3 is provided in `examples/ex_SB3.py`. 
+It uses the `data/example.h5` datasets in HDF5 format, which can be downloaded [here](10.6084/m9.figshare.27325329).
+
+## Installation 
+`Gymfolio` uses `poetry` for package management and installation. Clone the repository contents and run
+
+* `pip install poetry` if your python environment does not have it installed. 
+* In the same terminal, navigate to the project directory and input `poetry install`
+* The example `examples/ex_SB3.py` can be run with the default parameters. 
