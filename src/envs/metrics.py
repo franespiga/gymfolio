@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import torch
 
 def annualize_rets(r: torch.Tensor, periods_per_year: int = 252) -> torch.Tensor:
@@ -27,7 +28,7 @@ def annualize_rets(r: torch.Tensor, periods_per_year: int = 252) -> torch.Tensor
 
     Explanation: This function takes a series of periodic returns and annualizes them by
     compounding over the specified periods per year. It uses the formula:
-        Annualized Return = (1 + Total Return)^(Periods per Year / Number of Periods) - 1
+    Annualized Return = (1 + Total Return)^(Periods per Year / Number of Periods) - 1
     """
     compounded_growth = (1 + r).prod()
     n_periods = r.shape[0]
@@ -44,7 +45,7 @@ def annualize_vol(r: torch.Tensor, periods_per_year: int = 252) -> torch.Tensor:
 
     Explanation: This function computes the annualized standard deviation by multiplying the
     periodic standard deviation by the square root of the periods per year:
-        Annualized Volatility = Periodic Std Dev * sqrt(Periods per Year)
+    Annualized Volatility = Periodic Std Dev * sqrt(Periods per Year)
     """
     return torch.std(r, unbiased=True) * (periods_per_year ** 0.5)
 
@@ -60,7 +61,7 @@ def sharpe_ratio(r: torch.Tensor, riskfree_rate: float, periods_per_year: int = 
 
     Explanation: The Sharpe ratio measures the excess return (above risk-free rate) per unit
     of volatility. It uses annualized excess return divided by annualized volatility:
-        Sharpe Ratio = Annualized Excess Return / Annualized Volatility
+    Sharpe Ratio = Annualized Excess Return / Annualized Volatility
     """
     rf_per_period = (1 + riskfree_rate) ** (1 / periods_per_year) - 1
     excess_ret = r - rf_per_period

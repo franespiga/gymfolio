@@ -58,7 +58,7 @@ The environment starts on `2023-03-06` and our first rebalancing date is `2023-0
 6. Date trackers are updated and the environment checks if the trajectory has the maximum length of 10, or if there are no more available rebalancing dates in the history.
    If that is the case, `env.step()` returns `done=True`, else the environment proceeds to the next interaction.
 
-![envobs](./docs/_static/gymfolio_obs.png)
+![envobs](./_static/gymfolio_obs.png)
 
 
 ### Base reward
@@ -86,7 +86,7 @@ $$r=\vec{w}.\cdot \vec{\frac{P_{Close,t}}{P_{Close,t-1}}}$$
 
 If `continuous_weights=False`, however, we can split the next weights (*agent action*) in three vectors.
 
-![weights](./docs/_static/weights.png)
+![weights](./_static/weights.png)
 
 * W buy are the weight increases (positive weight deltas) between consecutive rebalancings. 
 * W sell are the weight decreases (negative weight deltas) between consecutive rebalancings.
@@ -103,7 +103,7 @@ For the effective action date, the return is the sum of three different return s
 * Sells: the return is computed as the ratio between the Open price, when it is sold and the last Close price.
 * Hold: the return is computed as the ratio of the Close price and the last Close.
 
-![returns](./docs/_static/returns.png)
+![returns](./_static/returns.png)
 
 ### Observations 
 Gymfolio offers versatile options for configuring the observation space, which is derived from the subset of the last 
@@ -111,7 +111,7 @@ Gymfolio offers versatile options for configuring the observation space, which i
 formatted as a 1D vector, a 2D matrix, or a tensor, providing flexibility in how the data is presented 
 to the reinforcement learning agent.
 
-![dfobs](./docs/_static/obs_dataframe.png)
+![dfobs](./_static/obs_dataframe.png)
 
 #### Vector mode
 In vector mode, the rows of the observation table are concatenated into a
@@ -121,7 +121,7 @@ structure. This method is particularly useful when the agent requires a simple,
 compact representation of the data, such as tree-based models or multi-layer
 perceptrons (MLPs).
 
-![obs_vector](./docs/_static/obs_vector.png)
+![obs_vector](./_static/obs_vector.png)
 
 
 #### Tile mode 
@@ -132,7 +132,7 @@ spatial or sequential representations of data, such as Recurrent Neural Networks
 structure, the environment provides a comprehensive view of the indicators over
 the lookback period, enabling the agent to detect patterns and temporal relationships effectively.
 
-![obs_tile](./docs/_static/obs_tile.png)
+![obs_tile](./_static/obs_tile.png)
 
 #### Tensor mode
 
@@ -147,7 +147,7 @@ such as the Volatility Index (VIX) or interest rates, are extracted similarly.
 This global tensor G is then replicated across the number of instruments and
 concatenated with tensor I, resulting in the final observation tensor O.
 
-![obs_tensor](./docs/_static/obs_tensor.png)
+![obs_tensor](./_static/obs_tensor.png)
 
 Unlike the traditional (height x width x channels) format used in CNNs for
 computer vision, Gymfolio returns the tensor as Channels x Height x Width or
