@@ -17,6 +17,10 @@ jobs:
       - name: Sphinx build
         run: |
           sphinx-build -M html docs/source _build
+      - name: Prevent Jekyll Processing
+        run: |
+          touch _build/html/.nojekyll
+        # Create a .nojekyll file in the output directory to prevent Jekyll processing on GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
