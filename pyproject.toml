@@ -1,10 +1,14 @@
 [tool.poetry]
 name = "gymfolio"
-version = "0.1.0"
+version = "0.1.2"
 description = "Reinforcement Learning environment for Portfolio Optimization"
 authors = ["franespiga <francisco.espiga.fernandez@gmail.com>"]
 readme = "README.md"
-packages = [{include = "*", from="src"}]
+license = "GPL-3.0-only"
+repository = "https://github.com/franespiga/gymfolio"
+homepage = "https://franespiga.github.io/gymfolio/"
+documentation  = "https://franespiga.github.io/gymfolio/overview.html"
+packages = [{include = "envs", from = "src",  to = "gymfolio"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
