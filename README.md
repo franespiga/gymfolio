@@ -16,6 +16,7 @@ trading simulations and optimizing portfolio decisions avoiding usual pitfalls t
 An example of the usage of StableBaselines3 is provided in `examples/ex_SB3.py`.
 It uses the `data/example.h5` datasets in HDF5 format, which can be downloaded [here](10.6084/m9.figshare.27325329).
 
+Additional documentation is available [here](https://franespiga.github.io/gymfolio/overview.html).
 ## Installation
 `Gymfolio` uses `poetry` for package management and installation. Clone the repository contents and run
 
