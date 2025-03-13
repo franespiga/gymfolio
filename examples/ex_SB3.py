@@ -246,7 +246,7 @@ if __name__ == "__main__":
                 pf_b = torch.dot(w_b, r_b)
                 pf_s = torch.dot(w_s, r_s)
 
-                pf_rets = pf_h + pf_b + pf_h
+                pf_rets = pf_h + pf_b + pf_s
 
                 returns[idx] = pf_rets.detach().numpy().tolist()
 

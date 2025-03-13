@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gymfolio"
-version = "0.1.2"
+version = "0.1.3"
 description = "Reinforcement Learning environment for Portfolio Optimization"
 authors = ["franespiga <francisco.espiga.fernandez@gmail.com>"]
 readme = "README.md"
