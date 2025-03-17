@@ -42,6 +42,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
                  allow_short_positions: bool = False,
                  max_trajectory_len: int = 252,
                  observation_frame_lookback: int = 5,
+                 action_delay:int = 1,
                  render_mode: str = 'tile',
                  agent_type: str = 'discrete',
                  convert_to_terminated_truncated: bool = False,
@@ -59,6 +60,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         :param bool allow_short_positions: `True` to enable short positions.
         :param int max_trajectory_len: max total number of periods for the trajectories. E.g. 252 for a trading year.
         :param int observation_frame_lookback: return the previous N observations from the environment to take the next action.
+        :param int action_delay: number of periods from decision to execution. Defaults to 1 (e.g. next trading day)
         :param str render_mode: Either `tile` (2D), `tensor`(3D) or `vector`(1D) to return the environment state.
         :param str agent_type: `discrete` or `continuous`
         :param bool convert_to_terminated_truncated: use done (old Gym version) or truncated and terminated (new Gymnasium version)
@@ -83,10 +85,14 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         self.transaction_costs = transaction_costs
         self.continuous_weights = continuous_weights
         self.allow_short_positions = allow_short_positions
+        # Date management ---------------------------------
+        self.action_delay = action_delay
         self.available_dates = self.df_ohlc.sort_index().index.values.tolist()
         self.rebalancing_dates = None
+        self.delayed_action_dates = None
         self.current_rebalancing_date = None
         self.next_rebalancing_date = None
+        # State observation management --------------------
         self.render_mode = render_mode
         self.agent_type = agent_type
         self.convert_to_terminated_truncated = convert_to_terminated_truncated
@@ -237,6 +243,9 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         :rtype: tuple
         """
         self.current_rebalancing_date = random.choice(self.available_dates[:-(self.rebalance_every + 1)])
+        delayed_idx = self.available_dates.index(self.current_rebalancing_date)+self.action_delay
+        self.current_delayed_action_date = self.available_dates[delayed_idx]
+
         self.current_trajectory_len = 0.0
         self.trajectory_returns = []
 
@@ -254,8 +263,12 @@ class PortfolioOptimizationEnv(gymnasium.Env):
             self.rebalancing_dates = self.available_dates[
                                      self.available_dates.index(self.current_rebalancing_date)::self.rebalance_every]
 
-        self.next_rebalancing_date = self.rebalancing_dates[
-            self.rebalancing_dates.index(self.current_rebalancing_date) + 1]
+            self.delayed_action_dates = self.available_dates[
+                         self.available_dates.index(self.current_delayed_action_date)::self.rebalance_every]
+
+        self.next_rebalancing_date = self.rebalancing_dates[self.rebalancing_dates.index(self.current_rebalancing_date) + 1]
+        self.next_delayed_action_date = self.delayed_action_dates[self.delayed_action_dates.index(self.current_delayed_action_date) + 1]
+
         _new_weights = torch.rand(self.action_size)
         self.new_weights = _new_weights / _new_weights.sum()  # We start without any assets
 
@@ -392,9 +405,14 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         to the decision date at close)
         """
         # get trajectory returns during holding period ---
+        #<FE>: I need to decouple decision and execution to more than 1 period.
+
         effective_rebalancing_date = self.available_dates[self.available_dates.index(self.current_rebalancing_date) + 1]
+
+
         r_sell = torch.Tensor(self.returns_sell.loc[[effective_rebalancing_date]].values).squeeze()
         r_buy = torch.Tensor(self.returns_buy.loc[[effective_rebalancing_date]].values).squeeze()
+
         return_frame = self.returns_hold.loc[effective_rebalancing_date:self.next_rebalancing_date, :]
         R_hold = torch.Tensor(return_frame.values)
         r_hold = torch.Tensor(self.returns_hold.loc[[effective_rebalancing_date]].values).squeeze()
