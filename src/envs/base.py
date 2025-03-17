@@ -408,19 +408,22 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         #<FE>: I need to decouple decision and execution to more than 1 period.
 
         effective_rebalancing_date = self.available_dates[self.available_dates.index(self.current_rebalancing_date) + 1]
+        effective_delayed_decision_date = self.available_dates[self.available_dates.index(self.current_delayed_action_date) + 1]
 
 
-        r_sell = torch.Tensor(self.returns_sell.loc[[effective_rebalancing_date]].values).squeeze()
-        r_buy = torch.Tensor(self.returns_buy.loc[[effective_rebalancing_date]].values).squeeze()
 
-        return_frame = self.returns_hold.loc[effective_rebalancing_date:self.next_rebalancing_date, :]
+        # Returns ------------
+        r_sell = torch.Tensor(self.returns_sell.loc[[effective_delayed_decision_date]].values).squeeze()
+        r_buy = torch.Tensor(self.returns_buy.loc[[effective_delayed_decision_date]].values).squeeze()
+
+        return_frame = self.returns_hold.loc[effective_delayed_decision_date:self.next_delayed_action_date, :]
         R_hold = torch.Tensor(return_frame.values)
-        r_hold = torch.Tensor(self.returns_hold.loc[[effective_rebalancing_date]].values).squeeze()
+        r_hold = torch.Tensor(self.returns_hold.loc[[effective_delayed_decision_date]].values).squeeze()
+
 
         # Observation frame is the next information available, from our action date (decision date+1) to the next rebalancing date
         # This is the information that we will use to decide the next weights.
         idx_lookback = max(0, self.available_dates.index(self.next_rebalancing_date) - self.observation_frame_lookback)
-
         observation_frame = self.df_observations[self.available_dates[idx_lookback]:self.next_rebalancing_date]
         observation_frame = self.expand_observation_frame(observation_frame)
 
@@ -451,8 +454,11 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         else:
             # move the date cursor to the next rebalancing dates ---
             self.current_rebalancing_date = self.next_rebalancing_date  # Date when we are taking the decision
+            self.current_delayed_action_date = self.next_delayed_action_date # Date when we execute the decision
             self.next_rebalancing_date = self.rebalancing_dates[
                 self.rebalancing_dates.index(self.current_rebalancing_date) + 1]  # Get next rebalancing date
+            self.next_delayed_action_date = self.delayed_action_dates[
+                self.delayed_action_dates.index(self.current_delayed_action_date) + 1]  # Get next rebalancing date
 
         # Compute split weights and compute returns ---
         if self.continuous_weights:
