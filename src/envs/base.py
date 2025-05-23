@@ -170,6 +170,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
 
         :return: None
         """
+
         ohlc_cols = list(set([i[1] for i in self.df_ohlc.columns]))
         instrument_ordering = [(i, j) for i in self.indicator_instrument_names for j in ohlc_cols]
         r_h, r_b, r_s = create_return_matrices(self.df_ohlc.loc[:,instrument_ordering])
@@ -262,7 +263,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         idx_lookback = max(0,
                            self.available_dates.index(self.current_rebalancing_date) - self.observation_frame_lookback)
 
-        observation_frame = self.df_observations[self.available_dates[idx_lookback]:self.current_rebalancing_date]
+        observation_frame = self.df_observations.loc[self.available_dates[idx_lookback]:self.current_rebalancing_date,:]
         observation_frame = self.expand_observation_frame(observation_frame)
         # Add any additional information ---
         info = dict()
@@ -403,7 +404,7 @@ class PortfolioOptimizationEnv(gymnasium.Env):
         # This is the information that we will use to decide the next weights.
         idx_lookback = max(0, self.available_dates.index(self.next_rebalancing_date) - self.observation_frame_lookback)
 
-        observation_frame = self.df_observations[self.available_dates[idx_lookback]:self.next_rebalancing_date]
+        observation_frame = self.df_observations.loc[self.available_dates[idx_lookback]:self.next_rebalancing_date,:]
         observation_frame = self.expand_observation_frame(observation_frame)
 
         # Add any additional information ---
