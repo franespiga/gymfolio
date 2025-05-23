@@ -12,8 +12,8 @@ from tqdm import tqdm
 
 sys.path.append('../src')
 
-from src.envs.base import PortfolioOptimizationEnv
-from src.envs.common import create_return_matrices, decompose_weights_tensor
+from envs.base import PortfolioOptimizationEnv
+from envs.common import create_return_matrices, decompose_weights_tensor
 
 logger = logging.getLogger('StableBaselines3_example')
 logger.setLevel(logging.DEBUG)
@@ -103,16 +103,16 @@ if __name__ == "__main__":
     logger.info("Loading datasets")
 
     try:
-        data = pd.read_hdf(f"{input_path}/example.h5", 'instruments')
+        data = pd.read_hdf(f"{input_path}/data.h5", 'instruments')
         data.index = pd.to_datetime(data.index).strftime('%Y-%m-%d')
-        data = data[args['start_date']:]
+        data = data.loc[args['start_date']:,:]
         instruments = [i[0] for i in data.columns if i[1]=='Close']
     except:
         logger.error(f"Error reading HDF5 instrument dataset on {input_path}")
         raise ValueError("No Instruments found")
 
     try:
-        indicators = pd.read_hdf(f"{input_path}/example.h5", 'technical_indicators')
+        indicators = pd.read_hdf(f"{input_path}/data.h5", 'technical_indicators')
         indicators.index = pd.to_datetime(indicators.index).strftime('%Y-%m-%d')
     except:
         logger.error(f"Error reading HDF5 technical indicators dataset on {input_path}, not found")
@@ -130,11 +130,11 @@ if __name__ == "__main__":
     metadata['timesteps'] = args['timesteps']
 
     logger.info(f"Preparing TRAIN/Test split to/fro {args['reference_date']}")
-    train_data = data[:args['reference_date']]
-    test_data = data[args['reference_date']:]
+    train_data = data.loc[:args['reference_date'],:]
+    test_data = data.loc[args['reference_date']:,:]
 
-    train_indicators = indicators[:args['reference_date']]
-    test_indicators = indicators[args['reference_date']:]
+    train_indicators = indicators.loc[:args['reference_date'],:]
+    test_indicators = indicators.loc[args['reference_date']:,:]
 
     if args['use_prices_as_indicators']:
         train_indicators = train_indicators.merge(train_data, right_index = True, left_index = True)
@@ -238,7 +238,7 @@ if __name__ == "__main__":
             if idx in R_h.index:
                 new_weights = row.values
                 w_h, w_b, w_s = decompose_weights_tensor(torch.Tensor(new_weights), torch.Tensor(current_weights))
-                r_h = torch.Tensor(R_h.loc[idx])
+                r_h = torch.Tensor(R_h.loc[idx,:])
                 r_b = torch.Tensor(R_b.loc[idx])
                 r_s = torch.Tensor(R_s.loc[idx])
 
@@ -258,7 +258,7 @@ if __name__ == "__main__":
         df_strategy.index = pd.to_datetime(df_strategy.index)
         print(df_strategy)
 
-        df_buy_and_hold = data.loc[:,[(i, 'Close') for i in instruments]].pct_change()
+        df_buy_and_hold = data.loc[:,[(i, 'Close') for i in instruments]].ffill().pct_change(fill_method = None)
         df_buy_and_hold.columns = [i[0] for i in df_buy_and_hold.columns]
         df_buy_and_hold['equal_weights'] = df_buy_and_hold.mean(axis = 1)
         df_buy_and_hold.index = pd.to_datetime(df_buy_and_hold.index)
