@@ -32,8 +32,10 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.autodoc",
     "sphinx_rtd_theme",
+    'myst_parser',
     "sphinx.ext.mathjax",
-    "sphinx_mdinclude"
+    "sphinx_mdinclude",
+
 ]
 
 templates_path = ['_templates']
