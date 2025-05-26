@@ -15,6 +15,7 @@ build:
       # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
       # VIRTUAL_ENV needs to be set manually for now, see #11150
       - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH
+      - source $READTHEDOCS_VIRTUALENV_PATH/bin/activate
       - poetry install --only docs
 
 sphinx:
