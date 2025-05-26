@@ -4,12 +4,11 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.12"
-    poetry: "1.6"
-  #jobs:
-    #post_create_environment:
+  jobs:
+    post_create_environment:
       # Install poetry
       # https://python-poetry.org/docs/#installing-manually
-     # - pip install poetry
+      - pip install poetry
 
     #post_install:
       # Install dependencies with 'docs' dependency group
