@@ -4,11 +4,12 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.12"
-  jobs:
-    post_create_environment:
+    poetry: "1.6"
+  #jobs:
+    #post_create_environment:
       # Install poetry
       # https://python-poetry.org/docs/#installing-manually
-      - pip install poetry
+     # - pip install poetry
 
     #post_install:
       # Install dependencies with 'docs' dependency group
@@ -18,3 +19,8 @@ build:
 
 sphinx:
   configuration: docs/source/conf.py
+
+
+python:
+  install:
+    - method: poetry

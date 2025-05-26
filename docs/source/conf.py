@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath("../../src"))
 project = 'gymfolio'
 copyright = '2024, Francisco Espiga Fernández'
 author = 'Francisco Espiga Fernández'
-release = '0.1.0'
+release = '0.2.1'
 
 master_doc = "index"
 
