@@ -4,12 +4,17 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.12"
-    poetry: "1.6"
+  jobs:
+    post_create_environment:
+      # Install poetry
+      # https://python-poetry.org/docs/#installing-manually
+      - pip install poetry
 
-python:
-  install:
-    - method: pip
-      path: .
+    post_install:
+      # Install dependencies with 'docs' dependency group
+      # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
+      # VIRTUAL_ENV needs to be set manually for now, see #11150
+      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH poetry install
 
 sphinx:
   configuration: docs/source/conf.py
