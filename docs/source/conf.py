@@ -33,8 +33,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx_rtd_theme",
     "sphinx.ext.mathjax",
-    "sphinx_mdinclude",
-    'myst_parser'
+    "sphinx_mdinclude"
 ]
 
 templates_path = ['_templates']
