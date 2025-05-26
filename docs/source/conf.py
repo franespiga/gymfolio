@@ -34,17 +34,15 @@ extensions = [
     "sphinx_rtd_theme",
     'myst_parser',
     "sphinx.ext.mathjax",
-    "sphinx_mdinclude",
+    #"sphinx_mdinclude",
 
 ]
 
 templates_path = ['_templates']
 exclude_patterns = []
 
-myst_enable_extensions = [
-    "amsmath",
-    "dollarmath",
-]
+myst_enable_extensions = ["colon_fence", "dollarmath", "amsmath", "deflist", "md_in_html", "substitution"]
+
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
