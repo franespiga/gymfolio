@@ -68,7 +68,9 @@ The reward provided is the log return between the effective rebalancing period a
 Some additional considerations on how the return series is computed when `continous_weights=False` are explained
 in section [Weight and return processing](#weight-and-return-processing)
 
-$$r_t = log(1 + P_t / P_{t-1})$$ 
+```{math}
+r_t = log(1 + P_t / P_{t-1}) 
+```
 
 
 
@@ -86,7 +88,7 @@ Conventional usage of weights is done when the environment is initialized with `
 the weighed average of the returns from the closing price of the previous rebalancing date, to the closing price of the current rebalancing date, 
 irrespective of the date being a holding date or a rebalancing date (thus modifying the weights the next day).
 
-$$r=\vec{w}.\cdot \vec{\frac{P_{Close,t}}{P_{Close,t-1}}}$$
+$r=\vec{w}.\cdot \vec{\frac{P_{Close,t}}{P_{Close,t-1}}}$
 
 If `continuous_weights=False`, however, we can split the next weights (*agent action*) in three vectors.
 

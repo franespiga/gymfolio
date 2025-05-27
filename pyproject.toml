@@ -30,7 +30,6 @@ black = "^24.4.2"
 pylint = "^3.2.4"
 wrapt = "^1.16.0"
 
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
