@@ -68,7 +68,9 @@ The reward provided is the log return between the effective rebalancing period a
 Some additional considerations on how the return series is computed when `continous_weights=False` are explained
 in section [Weight and return processing](#weight-and-return-processing)
 
-$r_t = log(1 + P_t / P_{t-1})$ 
+```{math}
+r_t = log(1 + P_t / P_{t-1}) 
+```
 
 where $P_t$ is the price of an asset at time t.
 
