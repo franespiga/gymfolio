@@ -16,7 +16,7 @@ build:
       # VIRTUAL_ENV needs to be set manually for now, see #11150
       - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH
       - pip install sphinx-rtd-theme
-      #- pip install myst-parser
+      - pip install myst-parser
       - pip install sphinx-mdinclude
       #- pip install sphinx-mathjax
       #- source $READTHEDOCS_VIRTUALENV_PATH/bin/activate
