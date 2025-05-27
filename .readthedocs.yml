@@ -18,7 +18,7 @@ build:
       - pip install sphinx-rtd-theme
       #- pip install myst-parser
       - pip install sphinx-mdinclude
-      - pip install sphinx-mathjax
+      - pip install sphinx-mathjax-offline
       #- source $READTHEDOCS_VIRTUALENV_PATH/bin/activate
       #- poetry install --only docs
 
