@@ -23,7 +23,7 @@ tables = "^3.8.0"
 [tool.poetry.group.docs.dependencies]
 sphinx = "^7.3.7"
 sphinx-rtd-theme = "^2.0.0"
-myst-parser = "^2.0.0"
+#myst-parser = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
