@@ -42,7 +42,8 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = []
 
-#myst_enable_extensions = ["colon_fence", "dollarmath", "amsmath"]
+myst_enable_extensions = ["dollarmath", "amsmath", "colon_fence",
+                          "deflist", "linkify", "replacements", "smartquotes", "substitution", "tasklist"]
 
 
 # -- Options for HTML output -------------------------------------------------
