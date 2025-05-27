@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview of Gymfolio &mdash; gymfolio 0.2.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=37f418d5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Gymfolio API reference" href="reference.html" />
+    <link rel="prev" title="Welcome to gymfolio’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gymfolio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview of Gymfolio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#gymfolio">GymFolio</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#usage-example">Usage example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#base-environment">Base environment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-behavior">Environment behavior</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#base-reward">Base reward</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#weight-and-return-processing">Weight and return processing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#observations">Observations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#vector-mode">Vector mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tile-mode">Tile mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tensor-mode">Tensor mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#other-considerations">Other considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#other-environments">Other environments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sharpe-ratio-environment">Sharpe ratio environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tracking-error-environment">Tracking error environment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#agents">Agents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html"><code class="docutils literal notranslate"><span class="pre">Gymfolio</span></code> API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gymfolio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview of Gymfolio</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/overview.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="overview-of-gymfolio">
+<h1>Overview of Gymfolio<a class="headerlink" href="#overview-of-gymfolio" title="Link to this heading"></a></h1>
+</section>
+<section id="gymfolio">
+<h1>GymFolio<a class="headerlink" href="#gymfolio" title="Link to this heading"></a></h1>
+<p>Welcome to GymFolio, a specialized Reinforcement Learning environment designed for the dynamic field of portfolio optimization.
+GymFolio allows practitioners to create investment strategies for financial investment using Reinforcement Learning.</p>
+<p>Built on Python, this environment provides a framework for training and evaluating various deep reinforcement
+learning models like PPO, SAC, and DQN in the context of managing and optimizing financial portfolios. It is compatible
+with most of the agents in the package <a class="reference external" href="https://stable-baselines3.readthedocs.io/en/master/">Stable Baselines 3</a> and has
+been tested with <code class="docutils literal notranslate"><span class="pre">DQN</span></code>, <code class="docutils literal notranslate"><span class="pre">DDPG</span></code>, <code class="docutils literal notranslate"><span class="pre">PPO</span></code> and <code class="docutils literal notranslate"><span class="pre">SAC</span></code>.</p>
+<p>GymFolio offers a highly flexible environment that allows users to experiment with different reward mechanisms, as well as extend it to their own.
+Users can utilize traditional log returns, or incorporate other usual metrics from the industry such as the Sharpe ratio and tracking error to measure performance.
+GymFolio also integrates key financial concepts such as the risk-free rate, slippage, and transaction costs, which are crucial for creating realistic
+trading simulations and optimizing portfolio decisions avoiding usual pitfalls that invalidate promising strategies.</p>
+<section id="usage-example">
+<h2>Usage example<a class="headerlink" href="#usage-example" title="Link to this heading"></a></h2>
+<p>An example of the usage of StableBaselines3 is provided in <code class="docutils literal notranslate"><span class="pre">examples/ex_SB3.py</span></code>.
+It uses the <code class="docutils literal notranslate"><span class="pre">data/example.h5</span></code> datasets in HDF5 format, which can be downloaded <a class="reference external" href="10.6084/m9.figshare.27325329">here</a>.</p>
+<p>Additional documentation is available <a class="reference external" href="https://franespiga.github.io/gymfolio/overview.html">here</a>.</p>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">Gymfolio</span></code> uses <code class="docutils literal notranslate"><span class="pre">poetry</span></code> for package management and installation. Clone the repository contents and run</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">poetry</span></code> if your python environment does not have it installed.</p></li>
+<li><p>In the same terminal, navigate to the project directory and input <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">install</span></code></p></li>
+<li><p>The example <code class="docutils literal notranslate"><span class="pre">examples/ex_SB3.py</span></code> can be run with the default parameters.</p></li>
+</ul>
+</section>
+<section id="base-environment">
+<h2>Base environment<a class="headerlink" href="#base-environment" title="Link to this heading"></a></h2>
+<p>The base environment class is located in <code class="docutils literal notranslate"><span class="pre">envs/base/PortfolioOptimizationEnv</span></code>, and it is built using OHLC data and an additional dataframe for
+the state observations provided by the environment, such as, but not limited to prices, technical indicators or alternative timestamped data.</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>df_ohlc: <code class="docutils literal notranslate"><span class="pre">pandas</span> <span class="pre">Dataframe</span></code> with the Open, Close, High and Low prices at the desired granularity.</p></li>
+<li><p>df_observations: <code class="docutils literal notranslate"><span class="pre">pandas</span> <span class="pre">Dataframe</span></code> with all the information used as observation of the environment.</p></li>
+<li><p>rebalance_every: <code class="docutils literal notranslate"><span class="pre">int,</span> <span class="pre">default</span> <span class="pre">=</span> <span class="pre">1</span></code> time between actions in consecutive time units in the series. <code class="docutils literal notranslate"><span class="pre">rebalance_every</span> <span class="pre">=</span> <span class="pre">4</span></code>, for instance, would mean that every 4 available dates a new rabalancing decision will be made.
+A value of 1 is for continuous (daily in the default time units) rebalancing.</p></li>
+<li><p>slippage: <code class="docutils literal notranslate"><span class="pre">float,</span> <span class="pre">default</span> <span class="pre">=</span> <span class="pre">0.005</span></code>, price changes from the submission of the order to its fulfillment.</p></li>
+<li><p>transaction_costs: <code class="docutils literal notranslate"><span class="pre">float,</span> <span class="pre">default</span> <span class="pre">=</span> <span class="pre">0.002</span></code>, costs of placing an order.</p></li>
+<li><p>continuous_weights: <code class="docutils literal notranslate"><span class="pre">bool,</span> <span class="pre">default</span> <span class="pre">=</span> <span class="pre">False</span></code>, should we consider the weights as continuous, based only on Close to Close price timeseries
+or split them in <em>Holding weights</em>, <em>Buying weights</em> and <em>Selling weighs</em> (More details in a follow-up section)</p></li>
+<li><p>allow_short_positions: <code class="docutils literal notranslate"><span class="pre">bool,</span> <span class="pre">default</span> <span class="pre">=</span> <span class="pre">False</span></code>, enforce long-only portfolios (<code class="docutils literal notranslate"><span class="pre">False</span></code>) or allow short positions.</p></li>
+<li><p>max_trajectory_len: <code class="docutils literal notranslate"><span class="pre">int,</span> <span class="pre">default</span> <span class="pre">=</span> <span class="pre">252</span></code>, maximum time units for the trajectory.</p></li>
+<li><p>observation_frame_lookback: <code class="docutils literal notranslate"><span class="pre">int</span></code> number of observations to return from the environment to take the next action.</p></li>
+<li><p>render_mode: <code class="docutils literal notranslate"><span class="pre">str,</span> <span class="pre">default=tile</span></code> how to return the state of the environment, either as a <code class="docutils literal notranslate"><span class="pre">vector``(1D),</span> <span class="pre">``tile</span></code> (2D) or <code class="docutils literal notranslate"><span class="pre">tensor</span></code> (3+D).</p></li>
+<li><p>agent_type: <code class="docutils literal notranslate"><span class="pre">str</span></code> either discrete or continuous.</p></li>
+<li><p>convert_to_terminated_truncated: <code class="docutils literal notranslate"><span class="pre">bool</span></code> use done (old Gym version) or truncated and terminated (new Gymnasium version compatible).</p></li>
+</ul>
+</section>
+<section id="environment-behavior">
+<h3>Environment behavior<a class="headerlink" href="#environment-behavior" title="Link to this heading"></a></h3>
+<p>Let’s assume that we have <code class="docutils literal notranslate"><span class="pre">rebalance_every=5</span></code>, <code class="docutils literal notranslate"><span class="pre">return_observation_frame=True</span></code> with continuous weights and a trajectory of 20.
+The environment starts on <code class="docutils literal notranslate"><span class="pre">2023-03-06</span></code> and our first rebalancing date is <code class="docutils literal notranslate"><span class="pre">2023-03-06</span> <span class="pre">+5</span> <span class="pre">trading</span> <span class="pre">days</span> <span class="pre">=</span> <span class="pre">2023-03-13</span></code>, the next on the <code class="docutils literal notranslate"><span class="pre">2023-03-20</span></code>.</p>
+<ol class="arabic simple">
+<li><p>An observation frame with dates <code class="docutils literal notranslate"><span class="pre">2023-03-07</span></code>:<code class="docutils literal notranslate"><span class="pre">2023-03-13</span></code> is sliced from df_observations and return to the agent
+in the previous <code class="docutils literal notranslate"><span class="pre">env.step()</span></code>.</p></li>
+<li><p>The agent process the observations and submits an action, the new portfolio weights.</p></li>
+<li><p>As the environment has continuous weights, no further processing is done to them.</p></li>
+<li><p>Return and observation frames are extracted between the next available date from the rebalancing date (<code class="docutils literal notranslate"><span class="pre">2023-03-14</span></code> for <code class="docutils literal notranslate"><span class="pre">2023-03-13</span></code>).
+The observation will be returned by the current <code class="docutils literal notranslate"><span class="pre">env.step()</span></code>.</p></li>
+<li><p>The reward is computed as the weighed average return of each instrument for the time window between the effective date of the action (<code class="docutils literal notranslate"><span class="pre">2023-03-14</span></code>)
+and the next rebalancing date (<code class="docutils literal notranslate"><span class="pre">2023-03-20</span></code>).</p></li>
+<li><p>Date trackers are updated and the environment checks if the trajectory has the maximum length of 10, or if there are no more available rebalancing dates in the history.
+If that is the case, <code class="docutils literal notranslate"><span class="pre">env.step()</span></code> returns <code class="docutils literal notranslate"><span class="pre">done=True</span></code>, else the environment proceeds to the next interaction.</p></li>
+</ol>
+<a class="reference external image-reference" href="./_static/gymfolio_obs.png"><img alt="envobs" src="_images/gymfolio_obs.png" />
+</a>
+</section>
+<section id="base-reward">
+<h3>Base reward<a class="headerlink" href="#base-reward" title="Link to this heading"></a></h3>
+<p>The reward provided is the log return between the effective rebalancing period and the previous rebalancing period.
+Some additional considerations on how the return series is computed when <code class="docutils literal notranslate"><span class="pre">continous_weights=False</span></code> are explained
+in section <span class="xref std std-ref">Weight and return processing</span></p>
+<p>$$r_t = log(1 + P_t / P_{t-1})$$</p>
+<p>TEST</p>
+<p>where $P_t$ is the price of an asset at time t.</p>
+<p>Then, as the agent decides through an episode, it collects subsequent $r_t$ rewards at each rebalancing date, with a discount factor $gamma$.</p>
+<p>More sophisticated reward functions are in the children environments located in <code class="docutils literal notranslate"><span class="pre">envs/custom</span></code>, which have the <em>Sharpe Ratio</em> (<code class="docutils literal notranslate"><span class="pre">SharpeEnv</span></code>),
+<em>Sortino Ratio</em> (<code class="docutils literal notranslate"><span class="pre">SortinoEnv</span></code>), <em>Calmar Ratio</em> (<code class="docutils literal notranslate"><span class="pre">CalmarEnv</span></code>) and <em>Tracking error</em> (<code class="docutils literal notranslate"><span class="pre">TrackingErrorEnv</span></code>).</p>
+</section>
+<section id="weight-and-return-processing">
+<h3>Weight and return processing<a class="headerlink" href="#weight-and-return-processing" title="Link to this heading"></a></h3>
+<p>Conventional usage of weights is done when the environment is initialized with <code class="docutils literal notranslate"><span class="pre">continuous_weights=True</span></code>. In this case, the returns are
+the weighed average of the returns from the closing price of the previous rebalancing date, to the closing price of the current rebalancing date,
+irrespective of the date being a holding date or a rebalancing date (thus modifying the weights the next day).</p>
+<p>$r=vec{w}.cdot vec{frac{P_{Close,t}}{P_{Close,t-1}}}$</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">continuous_weights=False</span></code>, however, we can split the next weights (<em>agent action</em>) in three vectors.</p>
+<a class="reference external image-reference" href="./_static/weights.png"><img alt="weights" src="_images/weights.png" />
+</a>
+<ul class="simple">
+<li><p>W buy are the weight increases (positive weight deltas) between consecutive rebalancings.</p></li>
+<li><p>W sell are the weight decreases (negative weight deltas) between consecutive rebalancings.</p></li>
+<li><p>W hold is the weight of the instrument that is not sold nor bought. It is the minimum value between the old and new weights for each instrument.</p></li>
+</ul>
+<p>The implementation in detail can be found in <code class="docutils literal notranslate"><span class="pre">src/envs/common.py</span> <span class="pre">decompose_weights_tensor</span></code>.</p>
+<p>Then, the returns for the frame between the effective action date and the rebalancing date, are computed</p>
+<p>For all the dates except the effective action date, the returns are computed identically as in the <code class="docutils literal notranslate"><span class="pre">continous_weights=True</span></code> case.
+For the effective action date, the return is the sum of three different return sources:</p>
+<ul class="simple">
+<li><p>Buys: the return is computed as the ratio between the Close price and the Open price.</p></li>
+<li><p>Sells: the return is computed as the ratio between the Open price, when it is sold and the last Close price.</p></li>
+<li><p>Hold: the return is computed as the ratio of the Close price and the last Close.</p></li>
+</ul>
+<a class="reference external image-reference" href="./_static/returns.png"><img alt="returns" src="_images/returns.png" />
+</a>
+</section>
+<section id="observations">
+<h3>Observations<a class="headerlink" href="#observations" title="Link to this heading"></a></h3>
+<p>Gymfolio offers versatile options for configuring the observation space, which is derived from the subset of the last
+<code class="docutils literal notranslate"><span class="pre">lookback</span></code> observations prior to the rebalancing date in the <code class="docutils literal notranslate"><span class="pre">df_observations</span></code> dataframe. This observation space can be
+formatted as a 1D vector, a 2D matrix, or a tensor, providing flexibility in how the data is presented
+to the reinforcement learning agent.</p>
+<a class="reference external image-reference" href="./_static/obs_dataframe.png"><img alt="dfobs" src="_images/obs_dataframe.png" />
+</a>
+<section id="vector-mode">
+<h4>Vector mode<a class="headerlink" href="#vector-mode" title="Link to this heading"></a></h4>
+<p>In vector mode, the rows of the observation table are concatenated into a
+single 1D vector. This format is straightforward and compatible with various
+machine learning models, presenting all the observational data in a flat, linear
+structure. This method is particularly useful when the agent requires a simple,
+compact representation of the data, such as tree-based models or multi-layer
+perceptrons (MLPs).</p>
+<a class="reference external image-reference" href="./_static/obs_vector.png"><img alt="obs_vector" src="_images/obs_vector.png" />
+</a>
+</section>
+<section id="tile-mode">
+<h4>Tile mode<a class="headerlink" href="#tile-mode" title="Link to this heading"></a></h4>
+<p>In tile mode, the observation table maintains its original shape, structured as
+a lookback x indicators matrix. This format is ideal for models that benefit from
+spatial or sequential representations of data, such as Recurrent Neural Networks
+(RNNs) or Convolutional Neural Networks (CNNs). By retaining the matrix
+structure, the environment provides a comprehensive view of the indicators over
+the lookback period, enabling the agent to detect patterns and temporal relationships effectively.</p>
+<a class="reference external image-reference" href="./_static/obs_tile.png"><img alt="obs_tile" src="_images/obs_tile.png" />
+</a>
+</section>
+<section id="tensor-mode">
+<h4>Tensor mode<a class="headerlink" href="#tensor-mode" title="Link to this heading"></a></h4>
+<p>In tensor mode, the observation data is processed differently to accommodate
+more complex models. Indicators specific to individual investment instruments,
+such as the Money Flow Index (MFI) or Relative Strength Index (RSI), are
+identified using the multiindex of the pandas dataframe. These indicators are
+extracted to form a tensor I, with dimensions of instruments x lookback x indicators.</p>
+<p>Additionally, global indicators that affect all instruments simultaneously,
+such as the Volatility Index (VIX) or interest rates, are extracted similarly.
+This global tensor G is then replicated across the number of instruments and
+concatenated with tensor I, resulting in the final observation tensor O.</p>
+<a class="reference external image-reference" href="./_static/obs_tensor.png"><img alt="obs_tensor" src="_images/obs_tensor.png" />
+</a>
+<p>Unlike the traditional (height x width x channels) format used in CNNs for
+computer vision, Gymfolio returns the tensor as Channels x Height x Width or
+instruments x lookback x indicators. This arrangement ensures compatibility
+with high-level reinforcement learning libraries like <a class="reference external" href="https://stable-baselines3.readthedocs.io/en/master/">StableBaselines3</a>, allowing
+for seamless integration and utilization of advanced RL algorithms.</p>
+</section>
+</section>
+<section id="other-considerations">
+<h3>Other considerations<a class="headerlink" href="#other-considerations" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Risk-free rate</strong>: The return on an investment with zero risk, providing a baseline against which to measure other investments.
+It is used in variants like the Sharpe ratio environment.</p></li>
+<li><p><strong>Slippage</strong>: The difference between the expected price of a trade and the price at which the trade is executed.
+It is used in the <code class="docutils literal notranslate"><span class="pre">continous_weights=True</span></code> case as a negative contribution in the returns of the first day. In the <code class="docutils literal notranslate"><span class="pre">continous_weights=False</span></code> it
+only impacts the buys and sales.</p></li>
+<li><p><strong>Transaction costs</strong>: Expenses incurred when buying or selling securities, including commissions and fees.
+As with the slippage, t is used in the <code class="docutils literal notranslate"><span class="pre">continous_weights=True</span></code> case as a negative contribution in the returns of the first day. In the <code class="docutils literal notranslate"><span class="pre">continous_weights=False</span></code> it
+only impacts the buys and sales.</p></li>
+</ul>
+</section>
+</section>
+<section id="other-environments">
+<h2>Other environments<a class="headerlink" href="#other-environments" title="Link to this heading"></a></h2>
+<section id="sharpe-ratio-environment">
+<h3>Sharpe ratio environment<a class="headerlink" href="#sharpe-ratio-environment" title="Link to this heading"></a></h3>
+<p>The Sharpe ratio environment replaces the cumulative log-returns as the reward by the Sharpe ratio between periods. Code is located in
+<code class="docutils literal notranslate"><span class="pre">src/envs/custom/SharpeEnv</span></code>.</p>
+<p>The Sharpe ratio is computed as:</p>
+<p>$$S = (R_p - R_f) / sigma_p$$</p>
+<p>where $R_p$ is the expected annualized portfolio return, $R_f$ is the risk-free rate, and $sigma_p$ is the standard deviation of the portfolio’s excess return.</p>
+<p>This environment only modifies the <code class="docutils literal notranslate"><span class="pre">compute_reward</span></code> method of the environment class and adds three additional attributes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">riskfree_rate</span></code>: risk free rate to compute the numerator of the sharpe ratio (r-Rf).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">periods_per_year</span></code>: periods per year to annualize returns for the Sharpe ratio computation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compute_cumulative</span></code>: use the whole trajectory of the episode or just the last returns for the computation of the Sharpe ratio.</p></li>
+</ul>
+</section>
+<section id="tracking-error-environment">
+<h3>Tracking error environment<a class="headerlink" href="#tracking-error-environment" title="Link to this heading"></a></h3>
+<p>The tracking error environment replaces the reward by the tracking error between the portfolio returns and a series of reference returns, usually an index like the
+SP500. Code is located in <code class="docutils literal notranslate"><span class="pre">src/envs/custom/TrackingErrorEnv</span></code>.</p>
+<p>The tracking error is computed as the standard deviation between the portfolio returns and the reference returns.
+This environment modifies the <code class="docutils literal notranslate"><span class="pre">compute_reward</span></code> and <code class="docutils literal notranslate"><span class="pre">step</span></code> methods of the environment class and adds one additional attribute:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">df_reference</span></code>: pd.DataFrame with the reference returns (tracked instrument).</p></li>
+</ul>
+</section>
+</section>
+<section id="agents">
+<h2>Agents<a class="headerlink" href="#agents" title="Link to this heading"></a></h2>
+<p>The goal of Gymfolio is to provide the main building blocks and wrappers for portfolio optimization,
+that can be used and extended with low or high level implementations of RL agents  using any python library (numpy, Tensorflow, PyTorch, PTAN or StableBaselines3).</p>
+<p>Gymfolio is compatible with most of the Stable Baselines 3 agents, and has been tested with a subset of them both with discrete and continuous action spaces.
+Gymfolio also has been successfully used in training Decision Transformers, generating trajectories to train the agent offline.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to gymfolio’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="reference.html" class="btn btn-neutral float-right" title="Gymfolio API reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Francisco Espiga Fernández.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
