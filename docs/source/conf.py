@@ -32,9 +32,9 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.autodoc",
     "sphinx_rtd_theme",
-    'myst_parser',
+    #'myst_parser',
     "sphinx.ext.mathjax",
-    #"sphinx_mdinclude",
+    "sphinx_mdinclude",
 
 ]
 
@@ -42,7 +42,7 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = []
 
-myst_enable_extensions = ["colon_fence", "dollarmath", "amsmath", "deflist", "md_in_html", "substitution"]
+#myst_enable_extensions = ["colon_fence", "dollarmath", "amsmath", "deflist", "md_in_html", "substitution"]
 
 
 # -- Options for HTML output -------------------------------------------------
