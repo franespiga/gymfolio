@@ -52,6 +52,7 @@ myst_enable_extensions = ["dollarmath", "amsmath", "colon_fence",
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
-
-# source_suffix = '.rst'
-source_suffix = ['.rst', '.md']
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
