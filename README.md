@@ -70,6 +70,8 @@ in section [Weight and return processing](#weight-and-return-processing)
 
 $$r_t = log(1 + P_t / P_{t-1})$$ 
 
+
+
 where $P_t$ is the price of an asset at time t.
 
 Then, as the agent decides through an episode, it collects subsequent $r_t$ rewards at each rebalancing date, with a discount factor $\gamma$.
