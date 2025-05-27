@@ -70,7 +70,7 @@ in section [Weight and return processing](#weight-and-return-processing)
 
 $$r_t = log(1 + P_t / P_{t-1})$$
 
-TEST
+TEST_ga2
 
 where $P_t$ is the price of an asset at time t.
 

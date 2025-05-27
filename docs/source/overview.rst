@@ -1,4 +1,4 @@
 Overview of Gymfolio
 ====================
 
-.. mdinclude:: ../../README.md
+.. include:: ../../README.md

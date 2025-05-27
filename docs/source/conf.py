@@ -35,7 +35,7 @@ extensions = [
     'myst_parser',
     "sphinx.ext.mathjax",
     "sphinx-mathjax-offline",
-    "sphinx_mdinclude",
+    #"sphinx_mdinclude",
 ]
 
 
